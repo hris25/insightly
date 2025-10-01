@@ -1,0 +1,10 @@
+{
+  "buildCommand": "prisma generate && npm run build",
+  "installCommand": "npm install && prisma generate",
+  "env": {
+    "DATABASE_URL": "@database_url",
+    "OPENROUTER_API_KEY": "@openrouter_api_key",
+    "NEXTAUTH_SECRET": "@nextauth_secret",
+    "NEXTAUTH_URL": "@nextauth_url"
+  }
+}
