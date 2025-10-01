@@ -1,0 +1,93 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  responses Response[]
+  sessions  Session[]
+
+  @@map("users")
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String?
+  user      User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  responses Response[]
+  report    GeneratedReport?
+
+  @@map("sessions")
+}
+
+model Module {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  order       Int
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  questions Question[]
+
+  @@map("modules")
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  moduleId    String
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  text        String
+  type        String   @default("text") // Only text questions
+  order       Int
+  isRequired  Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  responses Response[]
+
+  @@map("questions")
+}
+
+model Response {
+  id         String   @id @default(cuid())
+  sessionId  String
+  session    Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  userId     String?
+  user       User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  answer     String
+  createdAt  DateTime @default(now())
+
+  @@unique([sessionId, questionId])
+  @@map("responses")
+}
+
+model GeneratedReport {
+  id        String   @id @default(cuid())
+  sessionId String   @unique
+  session   Session  @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  content   String   // Generated AI content
+  pdfUrl    String?  // URL to generated PDF
+  createdAt DateTime @default(now())
+
+  @@map("generated_reports")
+}
